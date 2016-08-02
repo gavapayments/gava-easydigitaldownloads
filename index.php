@@ -103,7 +103,7 @@ function gava_process_payment($purchase_data)
 			'reference' => $payment,
 			'amount' => number_format($purchase_data['price'], 2, '.', null),
 			'return_url' => $return_url,
-			'cancel_url' => $return_url,			
+			'cancel_url' => $return_url,
 		);
 
 		$payload['signature'] = gava_sign($payload);
@@ -368,7 +368,7 @@ function gava_edd_listen_for_callback()
 	edd_insert_payment_note(
 		$checkout->reference,
 		sprintf(
-			__('Gava Checkout ID: %s, Paid by: %s, transaction code: %s', 'gava_edd' ),
+			__('Gava Checkout ID: %s, Paid by: %s, transaction code: %s', 'gava_edd'),
 			$checkout->id,
 			$checkout->phone,
 			$checkout->transactionCode

@@ -14,7 +14,7 @@ function gava_edd_register_gateway($gateways)
 {
 	$gateways['gava_edd'] = array(
 		'admin_label' => 'Gava',
-		'checkout_label' => __('Pay with EcoCash or TeleCash', 'gava_edd')
+		'checkout_label' => __('EcoCash or TeleCash', 'gava_edd')
 	);
 
 	return $gateways;

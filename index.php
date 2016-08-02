@@ -124,6 +124,9 @@ function gava_process_payment($purchase_data)
 			gava_exit_with_error($response);
 		}
 
+		//Clear cart
+		edd_empty_cart();
+
 		wp_redirect($redirect);
 		exit();
 	}

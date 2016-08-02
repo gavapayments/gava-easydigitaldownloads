@@ -2,7 +2,7 @@
 
 ---
 
-Easy Digital Downloads plugin for [Gava](http://github.com/ihatehandles/gava)
+[Easy Digital Downloads](https://easydigitaldownloads.com) plugin for [Gava](http://github.com/ihatehandles/gava)
 
 [Download](https://github.com/ihatehandles/gava-easydigitaldownloads/releases) a copy, and install + activate as you would any other WordPress plugin. Activate the gateway from within Easy Digital Downloads' *Setting* - *Payment Gateways* menu.
 

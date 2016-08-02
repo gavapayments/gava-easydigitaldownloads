@@ -292,6 +292,17 @@ function gava_validate_signature($request)
 	return ($signature === $request->signature);
 }
 
+/**
+ * Exit the script with (optional) $message
+ *
+ * @param string|null $message Message
+ * @return void
+ */
+function gava_exit($message = null)
+{
+	//if ($message) echo $message;
+	exit();
+}
 
 /**
  * Listens for and processes Gava callabacks
@@ -335,15 +346,15 @@ function gava_edd_listen_for_callback()
 		gava_callback_error('Checkout fetch failed');
 
 	//Defense: Gava doesn't yet have automated status changes from paid to not paid
-	if (!$checkout->paid) exit();
+	if (!$checkout->paid) gava_exit('Checkout not paid on Gava');
 
 	//Return silently if the payment cannot be found
-	if (!$payment = get_post($checkout->reference)) exit();
-	if ($payment->post_type !== 'edd_payment') exit();
-	if (edd_get_payment_gateway($checkout->reference) !== 'gava_edd') exit();
+	if (!$payment = get_post($checkout->reference)) gava_exit('Payment not found');
+	if ($payment->post_type !== 'edd_payment') gava_exit('Post type not edd_payment');
+	if (edd_get_payment_gateway($checkout->reference) !== 'gava_edd') gava_exit('Payment gateway not gava_edd');
 
 	//Already published
-	if (get_post_status($checkout->reference) == 'publish') exit();
+	if (get_post_status($checkout->reference) == 'publish') gava_exit('Already set to publish');
 
 	//I'm not sure under what conditions this would occur considering Gava checks that, but 
 	if (!gava_equal_floats($checkout->amount, edd_get_payment_amount($checkout->reference))) {
@@ -361,7 +372,7 @@ function gava_edd_listen_for_callback()
 		$body = "Customer paid $".$checkout->amount.". The order required ".$edd_get_payment_amount($checkout->reference);
 		$subject = '[Gava Easy Digital Downloads] Wrong settlement amount for order: '.$checkout->reference;
 		wp_mail(get_option('admin_email'), $subject, $body);
-		exit();
+		gava_exit('Amount mismatch');
 	}
 
 	//We get this far, we can complete the order
@@ -376,7 +387,7 @@ function gava_edd_listen_for_callback()
 	);
 
 	edd_update_payment_status($checkout->reference, 'publish');
-	exit();
+	gava_exit('Successfully processed');
 }
 
 add_action('init', 'gava_edd_listen_for_callback');

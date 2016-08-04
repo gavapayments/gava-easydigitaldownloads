@@ -4,7 +4,7 @@
 Plugin Name: Gava For Easy Digital Downloads
 Plugin URI: http://github.com/gava-easydigitaldownloads
 Description: Gava Payment Gateway Plugin For Easy Digital Downloads
-Version: 0.1
+Version: 0.1.3
 Author: Sam Takunda
 Author URI: http://github.com/ihatehandles
 */

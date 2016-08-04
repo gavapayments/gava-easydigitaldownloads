@@ -380,7 +380,7 @@ function gava_edd_listen_for_callback()
 		$checkout->reference,
 		sprintf(
 			__('Gava Checkout ID: %s, Paid by: %s, transaction code: %s', 'gava_edd'),
-			$checkout->id,
+			$checkout->checkoutId,
 			$checkout->phone,
 			$checkout->transactionCode
 		)

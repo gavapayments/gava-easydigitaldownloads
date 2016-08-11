@@ -4,7 +4,7 @@
 Plugin Name: Gava For Easy Digital Downloads
 Plugin URI: http://github.com/gava-easydigitaldownloads
 Description: Gava Payment Gateway Plugin For Easy Digital Downloads
-Version: 0.1.3
+Version: 0.1.4
 Author: Sam Takunda
 Author URI: http://github.com/ihatehandles
 */
@@ -109,7 +109,7 @@ function gava_process_payment($purchase_data)
 		$payload['signature'] = gava_sign($payload);
 
 		//create checkout, redirect to it
-		$endpoint = rtrim($edd_options['gava_checkout_url'], '/') . '/create?return_checkout_url';
+		$endpoint = rtrim($edd_options['gava_checkout_url'], '/') . '/create';
 		$response = wp_remote_post($endpoint, array('body' => $payload));
 
 		if (is_wp_error($response)) {

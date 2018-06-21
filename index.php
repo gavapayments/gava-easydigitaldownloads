@@ -4,12 +4,12 @@
 Plugin Name: Gava For Easy Digital Downloads
 Plugin URI: http://github.com/gava-easydigitaldownloads
 Description: Gava Payment Gateway Plugin For Easy Digital Downloads
-Version: 0.1.4
+Version: 0.9.0
 Author: Sam Takunda
-Author URI: http://github.com/ihatehandles
+Author URI: http://github.com/samtheson
 */
 
-//Register the gateway
+// Register the gateway
 function gava_edd_register_gateway($gateways)
 {
 	$gateways['gava_edd'] = array(
@@ -82,7 +82,7 @@ function gava_process_payment($purchase_data)
 
 	$payment = edd_insert_payment($payment);
 
-	//Check payment
+	// check payment
 	if (!$payment)
 	{
 		edd_record_gateway_error(
@@ -92,7 +92,7 @@ function gava_process_payment($purchase_data)
 			$payment
 		);
 
-		//Redirect the buyer again to checkout
+		// redirect the buyer again to checkout
 		edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
 
 	} else {
@@ -108,12 +108,12 @@ function gava_process_payment($purchase_data)
 
 		$payload['signature'] = gava_sign($payload);
 
-		//create checkout, redirect to it
+		// create checkout, redirect to it
 		$endpoint = rtrim($edd_options['gava_checkout_url'], '/') . '/create';
 		$response = wp_remote_post($endpoint, array('body' => $payload));
 
 		if (is_wp_error($response)) {
-			gava_exit_with_error($response);
+      gava_exit_with_error($response);
 		}
 
 		$redirect = wp_remote_retrieve_body($response);
@@ -124,7 +124,7 @@ function gava_process_payment($purchase_data)
 			gava_exit_with_error($response);
 		}
 
-		//Clear cart
+		// clear cart
 		edd_empty_cart();
 
 		wp_redirect($redirect);
@@ -148,14 +148,6 @@ function gava_exit_with_error($error)
 	$cartURL = get_permalink($edd_options['purchase_page']);
 	echo "<p>Failed to create checkout. Please contact support, or <a href='".$cartURL."'>click here</a> ".
 		"to return to the website and try again</p>";
-
-	/*
-	//Just gonna leave this here
-	echo '<p>Error details: </p><pre>';
-	print_r($error);
-	echo '</pre>';
-	*/
-
 	exit();
 }
 
@@ -187,7 +179,8 @@ function gava_equal_floats($a, $b)
  */
 function gava_callback_error($error)
 {
-	echo $error;
+    http_response_code(500);
+    echo $error;
 	die();
 }
 
@@ -203,18 +196,13 @@ function gava_fetch_checkout($hash)
 {
 	global $edd_options;
 
-	//Get checkout, confirm sig
-
 	$endpoint = rtrim($edd_options['gava_checkout_url'], '/') . '/checkout/details/' . $hash;
-
 	$response = wp_remote_get($endpoint);
-
 	if (is_wp_error($response)) {
 		return false;
 	}
 
 	$responseCode = wp_remote_retrieve_response_code($response);
-
 	if ($responseCode !== 200) {
 		gava_callback_error('Non-200 status during checkout fetch');
 	}
@@ -237,16 +225,12 @@ function gava_fetch_checkout($hash)
 	);
 
 	foreach ($expectedProperties as $property) {
-
 		if (!property_exists($checkout, $property)) return false;
-
 	}
 
 	if (!gava_validate_signature($checkout)) return false;
-
 	return $checkout;
 }
-
 
 /**
  * Given a iterable $payload, it signs it with the secret key
@@ -300,7 +284,7 @@ function gava_validate_signature($request)
  */
 function gava_exit($message = null)
 {
-	//if ($message) echo $message;
+	if ($message) echo $message;
 	exit();
 }
 
@@ -345,19 +329,19 @@ function gava_edd_listen_for_callback()
 	if (!$checkout = gava_fetch_checkout($callback->checkoutHash))
 		gava_callback_error('Checkout fetch failed');
 
-	//Defense: Gava doesn't yet have automated status changes from paid to not paid
+	// Defense: Gava doesn't yet have automated status changes from paid to not paid
 	if (!$checkout->paid) gava_exit('Checkout not paid on Gava');
 
-	//Return silently if the payment cannot be found
+	// Return silently if the payment cannot be found
 	if (!$payment = get_post($checkout->reference)) gava_exit('Payment not found');
 	if ($payment->post_type !== 'edd_payment') gava_exit('Post type not edd_payment');
 	if (edd_get_payment_gateway($checkout->reference) !== 'gava_edd') gava_exit('Payment gateway not gava_edd');
 
-	//Already published
+	// Already published
 	if (get_post_status($checkout->reference) == 'publish') gava_exit('Already set to publish');
 
-	//I'm not sure under what conditions this would occur considering Gava checks that, but 
-	if (!gava_equal_floats($checkout->amount, edd_get_payment_amount($checkout->reference))) {
+	// I'm not sure under what conditions this would occur considering Gava checks that, but 
+	if (!gava_equal_floats(($checkout->amount / 100), edd_get_payment_amount($checkout->reference))) {
 
 		edd_record_gateway_error(
 			__( 'Amount mismatch error', 'gava_edd' ),
@@ -368,14 +352,14 @@ function gava_edd_listen_for_callback()
 			$checkout->reference
 		);
 
-		//Email admin
+		// Email admin
 		$body = "Customer paid $".$checkout->amount.". The order required ".$edd_get_payment_amount($checkout->reference);
 		$subject = '[Gava Easy Digital Downloads] Wrong settlement amount for order: '.$checkout->reference;
 		wp_mail(get_option('admin_email'), $subject, $body);
 		gava_exit('Amount mismatch');
 	}
 
-	//We get this far, we can complete the order
+	// We get this far, we can complete the order
 	edd_insert_payment_note(
 		$checkout->reference,
 		sprintf(
